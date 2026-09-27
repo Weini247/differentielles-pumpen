@@ -12,7 +12,7 @@ FILES = {
     "baseline" : PATHS.raw / "kmessung.csv",
     "klein" : PATHS.raw / "messung_rohr_klein.csv",
     "mittel" : PATHS.raw / "messung_rohr_mittel.csv",
-    "groß" : PATHS.raw / "messung_rohr_groß.csv",
+    "groß" : PATHS.raw / "rohrgr.csv",
 }
 
 
@@ -21,7 +21,12 @@ FILES = {
 
 def load_measurment(path) -> pd.DataFrame:
     df = pd.read_csv(path)
-    df = pd.rename(columns=COLUMN_MAP)
+    
+
+    df.columns = df.columns.str.strip()
+    df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
+
+    df = df.rename(columns=COLUMN_MAP)
 
     df["delta_p"] = df["p_N"] - df["p_H"]
     df["p_mean"] = (df["p_N"] + df["p_H"]) / 2
