@@ -1,5 +1,5 @@
 import pandas as pd
-from data import Paths
+from data import PATHS
 from pathlib import Path
 
 COLUMN_MAP = {
@@ -9,17 +9,13 @@ COLUMN_MAP = {
 }
 
 FILES = {
-    "baseline" : Paths.raw / "kmessung.csv",
-    "klein" : Paths.raw / "messung_rohr_klein.csv",
-    "mittel" : Paths.raw / "messung_rohr_mittel.csv",
-    "groß" : Paths.raw / "messung_rohr_groß.csv",
+    "baseline" : PATHS.raw / "kmessung.csv",
+    "klein" : PATHS.raw / "messung_rohr_klein.csv",
+    "mittel" : PATHS.raw / "messung_rohr_mittel.csv",
+    "groß" : PATHS.raw / "messung_rohr_groß.csv",
 }
 
-ROOT = Path(__file__).resolve().parent
-RAW_DIR = ROOT / "data" / "raw"
-PROCESSED_DIR = ROOT / "data" / "processed"
-PLOTS_DIR = PROCESSED_DIR / "plots"
-TABLES_DIR = PROCESSED_DIR / "tables"
+
 
 
 

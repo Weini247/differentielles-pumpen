@@ -2,7 +2,7 @@ from data_io import FILES, load_measurment
 
 def test_raw_files_exist():
     for path in FILES.values():
-        assert(path.exists(), f"Datei fehlt {path}")
+        assert path.exists(), f"Datei fehlt {path}"
 
 def test_measurments_can_be_loaded():
     for path in FILES.values():

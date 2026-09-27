@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd 
 from dataclasses import dataclass
-
+from pathlib import Path
 
 
 
@@ -35,4 +35,18 @@ PUMP_SECTIONS = {
     "klein" : PumpStreckenGeometrie(name="kleines Durchlassrohr", diameter=0.6e-3, length=20e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),
 }
 
+@dataclass(frozen=True)
+class ProjectPaths:
+    root : Path
+    raw : Path
+    processed : Path
+    plots : Path
+    tables : Path
 
+ROOT = Path(__file__).resolve().parent
+
+PATHS = ProjectPaths(root = ROOT, 
+                     raw = ROOT / "data"/ "raw", 
+                     processed = ROOT / "data" / "processed", 
+                     plots = ROOT / "processed" / "plots", 
+                     tables = ROOT / "processed" / "tables")
