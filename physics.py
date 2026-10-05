@@ -108,16 +108,5 @@ def ratio_uncert(value1 : float, uncert1 : float, value2 : float, uncert2 : floa
     rel = np.sqrt((uncert1 / value1) ** 2 + (uncert2 / value2) **2)
     return float(ratio * rel)
 
-def molecular_conductance_ratio(diam1, length1, diam2, length2):
-    return (diam1 **3 / length1) / (diam2 **3 / length2)
-
-def molecular_ratio_geom_uncert(diam1, diam_uncert1, length1, length_uncert1, diam2, diam_uncert2, length2, length_uncert2) -> float:
-    ratio = molecular_conductance_ratio(diam1, length1, diam2, length2)
-
-    rel = np.sqrt(
-        (3.0 * diam_uncert1 / diam1)**2
-        +(length_uncert1 / length1)**2
-        +(3.0 * diam_uncert2 / diam2) **2
-        + (length_uncert2 / length2) **2
-        )
-    return float(ratio * rel)
+def gemometry_rel_uncert(diameter: float, diam_uncert : float, length : float, length_uncert : float, diameter_power : float) -> float:
+    return float(np.sqrt((diameter_power * diam_uncert / diameter) ** 2 + (length_uncert / length) **2))

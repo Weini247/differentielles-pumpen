@@ -18,24 +18,20 @@ CALIPER_UNCERT = 0.05e-3
 
 @dataclass(frozen=True)
 class physicalconstants:
-    k_B : float = 1.380649e-23 
-    temp: float = 293.15
-    particle_diameter : float = 378e-12
-    mean_thermal_speed : float = 463.0
-    viscosity : float = 1.81e-5
-
-    @property
-    def collision(self) -> float:
-        return np.pi * self.particle_diameter**2
+    k_B : float = 1.380649e-23  #SI
+    temp: float = 293.15        #annahme
+    particle_diameter : float = 378e-12 #anleitung
+    mean_thermal_speed : float = 463.0 #anleitung
+    viscosity : float = 1.81e-5 #literatur luft bei 20grad C 
 
 CONSTANTS = physicalconstants()
 
 
 PUMP_SECTIONS = {
     "gross" : PumpStreckenGeometrie(name="großes Durchlassrohr", diameter=2.9e-3, length=50e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),
-    "medium" : PumpStreckenGeometrie(name="mittleres Durchlassrohr", diameter=2.0e-3, length=50e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),
+    "mittel" : PumpStreckenGeometrie(name="mittleres Durchlassrohr", diameter=2.0e-3, length=50e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),
     "klein" : PumpStreckenGeometrie(name="kleines Durchlassrohr", diameter=0.6e-3, length=20e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),
-}
+} #messwerte/laborbuch
 
 @dataclass(frozen=True)
 class ProjectPaths:
