@@ -66,6 +66,7 @@ def plot_molecular_conductances(results : pd.DataFrame, output_path = None):
     ax.bar(x + width/2, results["L_exp"] , width, yerr=results["u_L_exp"], capsize = 4, color = OKABE_ITO["orange"], label="Experiment")
 
     ax.set_xticks(x, results["label"])
+    ax.set_yscale("log")
     ax.set_ylabel("Leitwert $L$ / (L s$^{-1}$)")
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend()
@@ -78,6 +79,7 @@ def plot_laminar_pressure(data : pd.DataFrame, *, t, p_fit, output_path=None):
     ax.plot(data["t"], data["p_N"], ".", markersize=4, color = OKABE_ITO["blue"], label = "Messung $p_N$")
     ax.plot(t, p_fit, linewidth=1.7, color = OKABE_ITO["vermillion"], label="Exponentialfit")
     ax.plot(data["t"], data["p_H"], linewidth=1.2, linestyle="--", color=OKABE_ITO["bluish_green"], label="$p_H$")
+    ax.plot(data["t"], data["p_mean"], linewidth=1.2, linestyle=":", color=OKABE_ITO["black"], label=r"$\bar{p} = (p_N + p_H)/2$")
 
     ax.set_xlabel("Zeit $t$/s")
     ax.set_ylabel("Druck $p$ / mbar")
