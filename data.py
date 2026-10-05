@@ -46,5 +46,5 @@ ROOT = Path(__file__).resolve().parent
 PATHS = ProjectPaths(root = ROOT, 
                      raw = ROOT / "data"/ "raw", 
                      processed = ROOT / "data" / "processed", 
-                     plots = ROOT / "processed" / "plots", 
-                     tables = ROOT / "processed" / "tables")
+                     plots = ROOT  / "data" / "processed" / "plots", 
+                     tables = ROOT  / "data" / "processed" / "tables")

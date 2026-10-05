@@ -9,10 +9,10 @@ COLUMN_MAP = {
 }
 
 FILES = {
-    "baseline" : PATHS.raw / "kmessung.csv",
-    "klein" : PATHS.raw / "messung_rohr_klein.csv",
+    "keine" : PATHS.raw / "kmessung.csv",
+    "gross" : PATHS.raw / "rohrgr.csv",
     "mittel" : PATHS.raw / "messung_rohr_mittel.csv",
-    "groß" : PATHS.raw / "rohrgr.csv",
+    "klein" : PATHS.raw / "messung_rohr_klein.csv",
 }
 
 

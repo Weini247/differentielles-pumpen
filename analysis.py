@@ -14,7 +14,7 @@ INTAKE_LENGTH = 0.415 #laborbuch
 INTAKE_DIAMETER = 34.8e-3 #rekonsturktion aus cf rohrgeometrie einfluss auf s_eff < 0.2%
 APERTURE_DIAMETER = 1.0e-3 #laborbuch
 
-V_N = 0.146 #Innenvolumen PKR 360 hersteller angabe nicht direkt gemessen
+V_N = 0.146 #Rekonstruktion: CF-Nippel Nebenkammer + Innenvolumen PKR 360 (Herstellerangabe), nicht direkt geme
 U_V_N = 0.010
 
 

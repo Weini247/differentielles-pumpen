@@ -108,5 +108,5 @@ def ratio_uncert(value1 : float, uncert1 : float, value2 : float, uncert2 : floa
     rel = np.sqrt((uncert1 / value1) ** 2 + (uncert2 / value2) **2)
     return float(ratio * rel)
 
-def gemometry_rel_uncert(diameter: float, diam_uncert : float, length : float, length_uncert : float, diameter_power : float) -> float:
+def geometry_rel_uncert(diameter: float, diam_uncert : float, length : float, length_uncert : float, diameter_power : float) -> float:
     return float(np.sqrt((diameter_power * diam_uncert / diameter) ** 2 + (length_uncert / length) **2))
