@@ -28,6 +28,8 @@ class physicalconstants:
     def collision(self) -> float:
         return np.pi * self.particle_diameter**2
 
+CONSTANTS = physicalconstants()
+
 
 PUMP_SECTIONS = {
     "gross" : PumpStreckenGeometrie(name="großes Durchlassrohr", diameter=2.9e-3, length=50e-3, diam_uncert=CALIPER_UNCERT, length_uncert=CALIPER_UNCERT),

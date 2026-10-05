@@ -4,8 +4,8 @@ from pathlib import Path
 
 COLUMN_MAP = {
     "Zeit [s]" : "t",
-    "Sensor 1 [mbar]" : "p_H",
-    "Sensor 2 [mbar]" : "p_N",
+    "Sensor 1 [mbar]" : "p_N",
+    "Sensor 2 [mbar]" : "p_H",
 }
 
 FILES = {
