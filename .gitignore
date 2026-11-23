@@ -1,26 +1,18 @@
-# Python
 __pycache__/
 *.py[cod]
-
-# Virtual environments
+.pytest_cache/
 .venv/
-venv/
-env/
-
-# IDE
+.venv*/
+.env
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Generated outputs
-data/processed/**
-
-# Keep directory structure
-!data/processed/.gitkeep
-!data/processed/plots/
-!data/processed/plots/.gitkeep
-!data/processed/tables/
-!data/processed/tables/.gitkeep
+# Lokale Messdaten, Einzelreihen und Archivkopien
+/data/
+/.local/
+/runs/
+*.zip
+*.7z
+*.tar*

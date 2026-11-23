@@ -1,4 +1,7 @@
 from __future__ import annotations
+import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -27,13 +30,13 @@ LAMINAR_P_MAX = 11.0 #aufgabe 8a
 
 TUBES = ("gross", "mittel", "klein")
 
-def write_table(df : pd.DataFrame, filename : str):
-    PATHS.tables.mkdir(parents=True, exist_ok=True)
-    df.to_csv(PATHS.tables / filename, index = False)
-
-def last_time_window(df : pd.DataFrame, seconds : float = LAST_SECONDS) -> pd.DataFrame:
+def last_time_window(df: pd.DataFrame, seconds: float = LAST_SECONDS) -> pd.DataFrame:
+    if df.empty or not np.isfinite(seconds) or seconds <= 0:
+        raise ValueError("Das Enddruckfenster benötigt Messwerte und eine positive Dauer.")
     t_end = float(df["t"].iloc[-1])
     return df[df["t"] >= t_end - seconds]
+
+
 def knudsen(p_mbar, diameter : float):
     return physics.knudsen_number(physics.converter(p_mbar, "mbar_to_pa"), diameter, k_B=CONSTANTS.k_B, temperatur_K = CONSTANTS.temp, particle_diameter = CONSTANTS.particle_diameter)
 
@@ -135,8 +138,14 @@ def laminar_analysis(df : pd.DataFrame, p_min :float = LAMINAR_P_MIN, p_max : fl
 
     mask = (df["p_N"] >= p_min) & (df["p_N"] <= p_max)
 
-    idx = np.flatnonzero(mask.to_numpy())
     data = df.loc[mask, ["t", "p_N", "p_H", "p_mean"]].sort_values("t")
+
+    if not (np.isfinite(p_min) and np.isfinite(p_max) and 0 < p_min < p_max):
+        raise ValueError("Das Druckfenster muss positiv, endlich und aufsteigend sein.")
+    if len(data) < 4 or data["t"].nunique() < 4 or data["p_N"].nunique() < 2:
+        raise ValueError("Druckfenster: mindestens vier verschiedene Zeiten und ein veränderlicher Druck nötig.")
+    if (data["p_N"] <= data["p_H"]).any():
+        raise ValueError("Druckfenster: p_N muss für die Durchsatzrechnung größer als p_H sein.")
 
     t = data["t"].to_numpy(dtype=float)
     p_N = data["p_N"].to_numpy(dtype=float)
@@ -151,6 +160,8 @@ def laminar_analysis(df : pd.DataFrame, p_min :float = LAMINAR_P_MIN, p_max : fl
     popt, pcov = curve_fit(lambda x_, C, A, b: physics.exponential_pressure(x_, C, A, b), x, p_N, p0=p0, bounds=((0.0, 0.0, 0.0), (np.inf, np.inf,np.inf)), maxfev=20000)
 
     offset, amplitude, decay = map(float, popt)
+    if not np.isfinite(pcov).all() or amplitude <= 0 or decay <= 0:
+        raise ValueError("Der Druckabfallfit liefert keine identifizierbaren Parameter.")
     u_offset, u_amplitude, u_decay = map(float, np.sqrt(np.diag(pcov)))
 
     p_fit = physics.exponential_pressure(x, offset, amplitude, decay)
@@ -190,31 +201,55 @@ def laminar_analysis(df : pd.DataFrame, p_min :float = LAMINAR_P_MIN, p_max : fl
     }
     return data, fit_result
 
-def main():
-    measurements = load_all_measurments()
-    write_table(flow_regions(), "flow_regimes_03.csv")
-    write_table(theoretical_conductances(), "theoretical_conductances_04.csv")
-    write_table(pd.DataFrame([calc_effective_pumping_speed()]), "effective_pumping_speed_05.csv")
-    plt.close(plots.plot_pump_curve(measurements, PATHS.plots / "pump_curves_06.pdf"))
-    write_table(end_pressures(measurements), "end_pressures_07a.csv")
-    molecular = molecular_results(end_pressures(measurements), theoretical_conductances(), calc_effective_pumping_speed()["S_eff"])
-
-    
-    write_table(molecular, "molecular_results_07b.csv")
-    plt.close(plots.plot_molecular_conductances(molecular, PATHS.plots/ "molecular_conductances_07b.pdf"))
-
-    write_table(pd.DataFrame([conductance_ratio_results(molecular)]), "conductance_ratio_07c.csv")
-
+def calculate_results(measurements):
+    """Berechne Tabellen vor dem Schreiben. Einzelmessungen bleiben im lokalen Pfad."""
+    flow = flow_regions()
+    theory = theoretical_conductances()
+    speed = calc_effective_pumping_speed()
+    ends = end_pressures(measurements)
+    molecular = molecular_results(ends, theory, speed["S_eff"])
     laminar, fit = laminar_analysis(measurements["klein"])
-    write_table(laminar, "laminar_results_08.csv")
-    write_table(pd.DataFrame([fit]), "laminar_fit_08.csv")
+    return {
+        "flow_regimes_03": flow,
+        "theoretical_conductances_04": theory,
+        "effective_pumping_speed_05": pd.DataFrame([speed]),
+        "end_pressures_07a": ends,
+        "molecular_results_07b": molecular,
+        "conductance_ratio_07c": pd.DataFrame([conductance_ratio_results(molecular)]),
+        "laminar_results_08": laminar,
+        "laminar_fit_08": pd.DataFrame([fit]),
+    }
 
-    plt.close(plots.plot_laminar_pressure(laminar, t = laminar["t"], p_fit = laminar["p_fit"], output_path = PATHS.plots / "laminar_pressure_fit_08.pdf"))
-    plt.close(plots.plot_laminar_conducatance(laminar["t"], laminar["L_exp"], laminar["L_theory"], output_path  = PATHS.plots / "laminar_conductance_08.pdf"))
 
-    
-    print(f"Tabellen : {PATHS.tables}")
-    print(f"Plots : {PATHS.plots}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Lokale Vakuumauswertung mit Einzelmesswerten.")
+    parser.add_argument("--raw-dir", type=Path, default=PATHS.raw)
+    parser.add_argument("--output-dir", type=Path, default=PATHS.processed)
+    args = parser.parse_args(argv)
+    if args.output_dir.resolve().is_relative_to(args.raw_dir.resolve()):
+        parser.error("Der Ausgabeordner darf nicht innerhalb der Rohdaten liegen.")
+    if args.output_dir.resolve().is_relative_to((PATHS.root / "results").resolve()):
+        parser.error("Der lokale Lauf schreibt Einzelwerte. Für results/ export_results.py verwenden.")
+    try:
+        measurements = load_all_measurments(args.raw_dir)
+        results = calculate_results(measurements)
+        table_dir = args.output_dir / "tables"
+        plot_dir = args.output_dir / "plots"
+        table_dir.mkdir(parents=True, exist_ok=True)
+        for name, table in results.items():
+            table.to_csv(table_dir / f"{name}.csv", index=False)
+        laminar = results["laminar_results_08"]
+        plt.close(plots.plot_pump_curve(measurements, plot_dir / "pump_curves_06.pdf"))
+        plt.close(plots.plot_molecular_conductances(
+            results["molecular_results_07b"], plot_dir / "molecular_conductances_07b.pdf"))
+        plt.close(plots.plot_laminar_pressure(
+            laminar, t=laminar["t"], p_fit=laminar["p_fit"],
+            output_path=plot_dir / "laminar_pressure_fit_08.pdf"))
+        plt.close(plots.plot_laminar_conducatance(
+            laminar["t"], laminar["L_exp"], laminar["L_theory"], plot_dir / "laminar_conductance_08.pdf"))
+    except (OSError, ValueError, RuntimeError) as exc:
+        parser.exit(1, f"Auswertung fehlgeschlagen: {exc}\n")
+    print(f"Lokale Ausgaben: {args.output_dir}")
 
 
 if __name__ == "__main__":

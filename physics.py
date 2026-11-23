@@ -52,7 +52,13 @@ def conductance(*, case :str, diameter=None, length=None,mean_thermal_speed=None
         L = np.pi * diameter**4 * p_sum / (256.0 * viscosity * length)
         return converter(L, "m3_to_liter")
     elif case == "throughput":
-        return np.asarray(throughput) / (np.asarray(p_upstream) - np.asarray(p_downstream))
+        p_upstream = np.asarray(p_upstream, dtype=float)
+        p_downstream = np.asarray(p_downstream, dtype=float)
+        gap = p_upstream - p_downstream
+        scale = np.maximum(np.abs(p_upstream), np.abs(p_downstream))
+        if np.any(~np.isfinite(gap) | (gap <= np.finfo(float).eps * scale)):
+            raise ValueError("Leitwert erfordert p_upstream > p_downstream mit auflösbarer Druckdifferenz.")
+        return np.asarray(throughput) / gap
     else: 
         raise ValueError(f"{case} case nicht definiert")
 
@@ -92,6 +98,9 @@ def conductance_uncert(p_N :float , p_H :float , effective_pumping_speed :float 
     p_H = float(p_H)
     S = float(effective_pumping_speed)
     dp = p_N - p_H
+
+    if not np.isfinite(dp) or dp <= np.finfo(float).eps * max(abs(p_N), abs(p_H)):
+        raise ValueError("Unsicherheitsrechnung erfordert p_N > p_H mit auflösbarer Druckdifferenz.")
 
     u_p_N = rel_pressure_uncert * p_N
     u_p_H = rel_pressure_uncert * p_H
