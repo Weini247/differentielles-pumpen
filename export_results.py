@@ -12,6 +12,13 @@ from analysis import calculate_results
 from data import CONSTANTS, PATHS, PUMP_SECTIONS
 from data_io import load_all_measurments
 from physics import conductance
+from time_plots import (
+    decay_summary,
+    overview_summary,
+    pressure_fit_figure,
+    pump_curves_figure,
+    time_conductance_figure,
+)
 
 MIN_BIN_COUNT = 5
 
@@ -37,7 +44,7 @@ def pressure_bins(laminar: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def public_tables(results: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def public_tables(results: dict[str, pd.DataFrame], measurements: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     molecular = results["molecular_results_07b"].loc[:, [
         "label", "K_N_tube", "L_exp", "u_L_exp", "L_theory", "u_L_theory",
     ]].set_axis([
@@ -51,10 +58,10 @@ def public_tables(results: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
         "R_exp", "u_R_exp", "R_theory", "u_R_theory",
     ]].set_axis(["measured_ratio", "measured_u", "model_ratio", "model_u"], axis=1)
     fit = results["laminar_fit_08"].loc[:, [
-        "p_min", "p_max", "n_points", "decay", "u_decay", "rms_residual",
+        "p_min", "p_max", "n_points", "offset", "amplitude", "decay", "u_decay", "rms_residual",
         "K_mean_min", "K_mean_max",
     ]].set_axis([
-        "upstream_pressure_min_mbar", "upstream_pressure_max_mbar", "n",
+        "upstream_pressure_min_mbar", "upstream_pressure_max_mbar", "n", "offset_mbar", "amplitude_mbar",
         "decay_s_inv", "decay_fit_u_s_inv", "pressure_residual_rms_mbar",
         "knudsen_mean_min", "knudsen_mean_max",
     ], axis=1)
@@ -64,6 +71,8 @@ def public_tables(results: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
         "molecular_ratio": ratio,
         "pressure_decay_fit": fit,
         "conductance_by_pressure": pressure_bins(results["laminar_results_08"]),
+        "pump_curves_by_time": overview_summary(measurements),
+        "small_tube_by_time": decay_summary(results["laminar_results_08"]),
     }
 
 
@@ -108,12 +117,18 @@ def pressure_figure(table: pd.DataFrame):
 def write_figures(output_dir: Path) -> None:
     molecular = pd.read_csv(output_dir / "molecular_conductance.csv")
     pressure = pd.read_csv(output_dir / "conductance_by_pressure.csv")
+    curves = pd.read_csv(output_dir / "pump_curves_by_time.csv")
+    small_tube = pd.read_csv(output_dir / "small_tube_by_time.csv")
+    fit = pd.read_csv(output_dir / "pressure_decay_fit.csv").iloc[0]
     with mpl.rc_context({"svg.hashsalt": "differentielles-pumpen", "svg.fonttype": "path"}):
-        for name, figure, table in [
-            ("molecular_conductance.svg", molecular_figure, molecular),
-            ("conductance_by_pressure.svg", pressure_figure, pressure),
+        for name, figure, args in [
+            ("molecular_conductance.svg", molecular_figure, (molecular,)),
+            ("conductance_by_pressure.svg", pressure_figure, (pressure,)),
+            ("pump_curves_by_time.svg", pump_curves_figure, (curves,)),
+            ("pressure_decay_fit.svg", pressure_fit_figure, (small_tube, fit)),
+            ("conductance_by_time.svg", time_conductance_figure, (small_tube,)),
         ]:
-            fig = figure(table)
+            fig = figure(*args)
             try:
                 fig.savefig(output_dir / name, metadata={"Date": None})
             finally:
@@ -132,7 +147,8 @@ def main(argv=None):
         parser.error("Der Ausgabeordner darf nicht innerhalb der Rohdaten liegen.")
     try:
         if not args.figures_only:
-            tables = public_tables(calculate_results(load_all_measurments(args.raw_dir)))
+            measurements = load_all_measurments(args.raw_dir)
+            tables = public_tables(calculate_results(measurements), measurements)
             args.output_dir.mkdir(parents=True, exist_ok=True)
             for name, table in tables.items():
                 table.to_csv(args.output_dir / f"{name}.csv", index=False,

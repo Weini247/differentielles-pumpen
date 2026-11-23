@@ -1,2 +1,2 @@
-upstream_pressure_min_mbar,upstream_pressure_max_mbar,n,decay_s_inv,decay_fit_u_s_inv,pressure_residual_rms_mbar,knudsen_mean_min,knudsen_mean_max
-5,11,91,0.03044127,0.00011617458,0.013015723,0.0130839,0.025082236
+upstream_pressure_min_mbar,upstream_pressure_max_mbar,n,offset_mbar,amplitude_mbar,decay_s_inv,decay_fit_u_s_inv,pressure_residual_rms_mbar,knudsen_mean_min,knudsen_mean_max
+5,11,91,3.9184557,6.9067189,0.03044127,0.00011617458,0.013015723,0.0130839,0.025082236

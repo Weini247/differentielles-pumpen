@@ -82,11 +82,22 @@ def test_end_to_end_public_export(tmp_path):
         "pumping_speed.csv", "molecular_conductance.csv", "molecular_ratio.csv",
         "pressure_decay_fit.csv", "conductance_by_pressure.csv",
         "molecular_conductance.svg", "conductance_by_pressure.svg",
+        "pump_curves_by_time.csv", "small_tube_by_time.csv",
+        "pump_curves_by_time.svg", "pressure_decay_fit.svg", "conductance_by_time.svg",
     }
     bins = pd.read_csv(output / "conductance_by_pressure.csv")
     assert (bins["n"] >= 5).all()
     assert (bins["pressure_high_mbar"] - bins["pressure_low_mbar"] == 1).all()
     assert {"t", "p_N", "p_H"}.isdisjoint(bins.columns)
+    for name in ("pump_curves_by_time", "small_tube_by_time"):
+        intervals = pd.read_csv(output / f"{name}.csv")
+        assert (intervals["n"] >= 5).all()
+        assert (intervals["bin_start_s"] % 10 == 0).all()
+        assert {"t", "p_N", "p_H", "L_exp"}.isdisjoint(intervals.columns)
+    overview = pd.read_csv(output / "pump_curves_by_time.csv")
+    first = overview[(overview["run"] == "klein") & (overview["bin_start_s"] == 0)].iloc[0]
+    assert first["n"] == 20
+    assert first["p_N_median"] == pytest.approx(decay.loc[decay["t"] < 10, "p_N"].median())
     before = {f.name: f.read_bytes() for f in output.glob("*.svg")}
     export_results(["--figures-only", "--output-dir", str(output)])
     assert {f.name: f.read_bytes() for f in output.glob("*.svg")} == before

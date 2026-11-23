@@ -22,7 +22,21 @@ Die **absoluten** experimentellen Leitwerte liegen bei allen drei Rohren unter d
 
 *Jeder Punkt fasst mindestens fünf Messwerte in einem festen 1-mbar-Intervall des mittleren Drucks zusammen. Vier Intervalle fassen 89 von 91 Punkten zusammen. Zwei Punkte in einem dünn besetzten Intervall bleiben lokal. Gezeigt sind Median und Interquartilsabstand des abgeleiteten Leitwerts. Die Balken beschreiben die Streuung innerhalb des Intervalls. Für das untersuchte Fenster ergibt sich bei mittlerem Druck eine Knudsen-Zahl von etwa 0,013 bis 0,025. Nach der hier verwendeten Grenze Kn = 0,01 liegt das Fenster im Übergangsbereich. Die laminare Kontinuumskurve ist ein Modellvergleich.*
 
-Die kompakten Tabellen stehen unter [`results/`](results/). Dazu gehören [Leitwerte](results/molecular_conductance.csv), [Leitwertverhältnis](results/molecular_ratio.csv), [Saugvermögen](results/pumping_speed.csv), [Fitkennzahlen](results/pressure_decay_fit.csv) und die [Druckintervalle](results/conductance_by_pressure.csv).
+### Zeitverläufe aus der ursprünglichen Auswertung
+
+![Druck in Neben- und Hauptkammer über die Zeit für alle vier Pumpversuche](results/pump_curves_by_time.svg)
+
+*Die Kurven zeigen den Mediandruck pro festem 10-s-Intervall für jede Kammer. Die vier Felder verwenden dieselbe logarithmische Druckskala.*
+
+![Druckabfall des kleinen Rohrs mit drei zusammengefassten Druckreihen und einem Exponentialfit](results/pressure_decay_fit.svg)
+
+*Der Exponentialfit wurde lokal aus den Einzelmessungen im Druckfenster 5 bis 11 mbar neu berechnet. Die drei Druckreihen erscheinen als Medianwerte pro 10-s-Intervall. Die Zeit beginnt am ersten Punkt des Fitfensters. Die glatte Linie dient der Schätzung der Druckableitung.*
+
+![Zeitabhängiger Leitwert des kleinen Rohrs und laminarer Modellvergleich](results/conductance_by_time.svg)
+
+*Der experimentelle Leitwert verwendet die Ableitung des Exponentialfits und den Druckunterschied der beiden Kammern. Die Punkte zeigen die Mediane der bereits berechneten Leitwerte pro 10-s-Intervall. Die gestrichelte Linie zeigt den laminaren Kontinuumsgrenzfall für dieselben Intervalle. Zeitintervalle mit weniger als fünf Einzelmessungen sind in allen drei Abbildungen ausgelassen.*
+
+Die kompakten Tabellen stehen unter [`results/`](results/). Dazu gehören [Leitwerte](results/molecular_conductance.csv), [Leitwertverhältnis](results/molecular_ratio.csv), [Saugvermögen](results/pumping_speed.csv), [Fitkennzahlen](results/pressure_decay_fit.csv) sowie die [Druckintervalle](results/conductance_by_pressure.csv), die [aggregierten Pumpkurven](results/pump_curves_by_time.csv) und die [Zeitintervalle des kleinen Rohrs](results/small_tube_by_time.csv).
 
 ## Wie die Leitwerte bestimmt werden
 
@@ -47,12 +61,12 @@ python analysis.py --raw-dir /pfad/zu/rohdaten
 python export_results.py --raw-dir /pfad/zu/rohdaten
 ```
 
-Der lokale Eingabeordner enthält `kmessung.csv`, `rohrgr.csv`, `messung_rohr_mittel.csv` und `messung_rohr_klein.csv`. Erwartet werden kommagetrennte Dateien mit `Zeit [s]`, `Sensor 1 [mbar]` und `Sensor 2 [mbar]` sowie streng ansteigenden Zeitwerten. Beide Skripte akzeptieren `--output-dir`. `analysis.py` schreibt die vollständigen Ausgaben standardmäßig in den lokalen, ignorierten Ordner `data/processed/`. `export_results.py` erzeugt die kompakten Tabellen und beiden Abbildungen in `results/`. Für das vollständige Nachrechnen aus den ursprünglichen Messreihen ist lokaler Zugriff auf die Messdateien erforderlich.
+Der lokale Eingabeordner enthält `kmessung.csv`, `rohrgr.csv`, `messung_rohr_mittel.csv` und `messung_rohr_klein.csv`. Erwartet werden kommagetrennte Dateien mit `Zeit [s]`, `Sensor 1 [mbar]` und `Sensor 2 [mbar]` sowie streng ansteigenden Zeitwerten. Beide Skripte akzeptieren `--output-dir`. `analysis.py` schreibt die vollständigen Ausgaben standardmäßig in den lokalen, ignorierten Ordner `data/processed/`. `export_results.py` erzeugt die kompakten Tabellen und fünf Abbildungen in `results/`. Für das vollständige Nachrechnen aus den ursprünglichen Messreihen ist lokaler Zugriff auf die Messdateien erforderlich.
 
 | Datei | Aufgabe |
 | --- | --- |
 | [`data.py`](data.py) und [`data_io.py`](data_io.py) | Versuchsparameter, Dateizuordnung und Validierung beim Einlesen |
 | [`physics.py`](physics.py) und [`analysis.py`](analysis.py) | Physikalische Modelle, Fits und lokale Auswertung |
-| [`plots.py`](plots.py) und [`export_results.py`](export_results.py) | Lokale Diagnoseplots und kompakte Repository-Ergebnisse |
+| [`plots.py`](plots.py), [`time_plots.py`](time_plots.py) und [`export_results.py`](export_results.py) | Lokale Diagnoseplots und kompakte Repository-Ergebnisse |
 | [`test_smoke.py`](test_smoke.py) | Analytische Referenzfälle, Eingabegrenzen und synthetischer Exporttest |
 
